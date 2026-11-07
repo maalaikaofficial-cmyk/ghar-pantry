@@ -18,6 +18,7 @@ function Index() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [household, setHousehold] = useState<string | null>(null);
 
@@ -34,14 +35,48 @@ function Index() {
   }, []);
 
   async function signIn(mode: "in" | "up") {
+    if (busy) return;
     setMsg(null);
-    const res =
-      mode === "in"
-        ? await supabase.auth.signInWithPassword({ email, password })
-        : await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin } });
-    if (res.error) return setMsg(res.error.message);
-    if (mode === "up" && !res.data.session) return setMsg("Check your email to confirm your account.");
-    refresh();
+    if (!email.trim() || !password) {
+      setMsg("Enter your admin email and password first.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const res = mode === "in"
+        ? await supabase.auth.signInWithPassword({ email: email.trim(), password })
+        : await supabase.auth.signUp({
+            email: email.trim(),
+            password,
+            options: { emailRedirectTo: window.location.origin },
+          });
+      if (res.error) {
+        setMsg("Authentication failed: " + res.error.message);
+        return;
+      }
+      if (mode === "up" && !res.data.session) {
+        setMsg("Check your email to confirm your account before signing in.");
+        return;
+      }
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      setUserId(userData.user?.id ?? null);
+      if (!userData.user) {
+        setMsg("No active session was returned. Check Supabase authentication settings.");
+        return;
+      }
+      const { data: hh, error: hhError } = await supabase.rpc("my_household");
+      if (hhError) {
+        setMsg("Signed in, but household lookup failed: " + hhError.message);
+      } else {
+        setHousehold((hh as string | null) ?? null);
+        if (hh) setMsg("Signed in successfully. The dashboard is still under development.");
+      }
+    } catch (error) {
+      setMsg("Connection or configuration error: " + (error instanceof Error ? error.message : String(error)));
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function createHousehold() {
@@ -58,8 +93,8 @@ function Index() {
         <>
           <input className="rounded border border-input p-3" placeholder="Admin email" value={email} onChange={(e) => setEmail(e.target.value)} />
           <input className="rounded border border-input p-3" type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-          <button className="rounded bg-primary p-3 text-primary-foreground" onClick={() => signIn("in")}>Admin sign in</button>
-          <button className="rounded border border-input p-3" onClick={() => signIn("up")}>Create admin account</button>
+          <button className="rounded bg-primary p-3 text-primary-foreground" disabled={busy} onClick={() => signIn("in")}>{busy ? "Please wait…" : "Admin sign in"}</button>
+          <button className="rounded border border-input p-3" disabled={busy} onClick={() => signIn("up")}>Create admin account</button>
         </>
       ) : !household ? (
         <button className="rounded bg-primary p-3 text-primary-foreground" onClick={createHousehold}>Set up my household</button>
@@ -69,7 +104,7 @@ function Index() {
       {userId && (
         <button className="text-sm underline" onClick={async () => { await supabase.auth.signOut(); refresh(); }}>Sign out</button>
       )}
-      {msg && <p className="text-sm">{msg}</p>}
+      {msg && <p role="alert" aria-live="polite" className="rounded border border-input bg-muted p-3 text-sm">{msg}</p>}
     </main>
   );
 }
