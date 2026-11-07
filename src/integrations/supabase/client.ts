@@ -54,10 +54,10 @@ function createSupabaseClient() {
 
   if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
     const missing = [
-      ...(!SUPABASE_URL ? ['SUPABASE_URL'] : []),
-      ...(!SUPABASE_PUBLISHABLE_KEY ? ['SUPABASE_PUBLISHABLE_KEY'] : []),
+      ...(!SUPABASE_URL ? ['VITE_SUPABASE_URL (browser build) / SUPABASE_URL (server)'] : []),
+      ...(!SUPABASE_PUBLISHABLE_KEY ? ['VITE_SUPABASE_PUBLISHABLE_KEY (browser build) / SUPABASE_PUBLISHABLE_KEY (server)'] : []),
     ];
-    const message = `Missing Supabase environment variable(s): ${missing.join(', ')}. Connect Supabase in Lovable Cloud.`;
+    const message = `Missing Supabase configuration: ${missing.join(', ')}. In Vercel, set the VITE_ variables for Production and redeploy with Build Cache disabled. Environment variables are embedded into the browser bundle at build time.`;
     console.error(`[Supabase] ${message}`);
     throw new Error(message);
   }
