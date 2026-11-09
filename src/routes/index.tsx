@@ -99,7 +99,7 @@ function Index() {
       ) : !household ? (
         <button className="rounded bg-primary p-3 text-primary-foreground" onClick={createHousehold}>Set up my household</button>
       ) : (
-        <p className="text-muted-foreground">Signed in. The admin dashboard and housekeeper screens are still being built.</p>
+        <p className="text-muted-foreground">Signed in. Open the housekeeper stock check below.</p>
       )}
       {userId && (
         <button className="text-sm underline" onClick={async () => { await supabase.auth.signOut(); refresh(); }}>Sign out</button>
