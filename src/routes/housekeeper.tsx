@@ -11,6 +11,9 @@ const choices: { value: Status; ur: string; en: string; color: string }[] = [
   { value: "no", ur: "ختم ہو گیا", en: "Finished", color: "bg-red-100 border-red-600" },
 ];
 
+const typography = { fontFamily: '"DM Sans", sans-serif' };
+const urduTypography = { fontFamily: '"Noto Nastaliq Urdu", serif', lineHeight: 2.2 };
+
 export const Route = createFileRoute("/housekeeper")({ component: Housekeeper });
 
 function Housekeeper() {
@@ -60,10 +63,11 @@ function Housekeeper() {
 
   const visible = items.filter(item => category === "all" || item.category_id === category);
   return (
-    <main className="mx-auto min-h-screen max-w-3xl bg-white px-4 py-6 text-slate-900">
+    <main style={typography} className="mx-auto min-h-screen max-w-3xl bg-white px-4 py-6 text-slate-900">
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Nastaliq+Urdu:wght@400;600;700&display=swap');`}</style>
       <header className="mb-6 text-center">
-        <h1 className="text-3xl font-bold" lang="ur">گھر پینٹری</h1>
-        <p className="mt-2 text-lg" lang="ur">گھر میں کیا موجود ہے؟</p>
+        <h1 style={urduTypography} className="text-3xl font-bold" lang="ur">گھر پینٹری</h1>
+        <p style={urduTypography} className="mt-2 text-lg" lang="ur">گھر میں کیا موجود ہے؟</p>
         <p className="text-sm text-slate-500">Tap one answer for each product</p>
       </header>
       {!ready && <p role="status">Loading products…</p>}
@@ -73,14 +77,14 @@ function Housekeeper() {
         <>
           <nav className="mb-6 flex gap-2 overflow-x-auto pb-2" aria-label="Product categories">
             <button type="button" onClick={() => setCategory("all")} className={`shrink-0 rounded-full border-2 px-5 py-3 font-semibold ${category==="all"?"border-slate-900 bg-slate-100":"border-slate-200"}`}>سب</button>
-            {categories.map(c => <button key={c.id} type="button" onClick={() => setCategory(c.id)} className={`shrink-0 rounded-full border-2 px-5 py-3 font-semibold ${category===c.id?"border-slate-900 bg-slate-100":"border-slate-200"}`}>{c.name_ur}</button>)}
+            {categories.map(c => <button key={c.id} type="button" onClick={() => setCategory(c.id)} className={`shrink-0 rounded-full border-2 px-5 py-3 font-semibold ${category===c.id?"border-slate-900 bg-slate-100":"border-slate-200"}`} style={urduTypography}>{c.name_ur}</button>)}
           </nav>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {visible.map(item => (
               <section key={item.id} className="rounded-2xl border border-slate-200 p-4 shadow-sm">
                 <div className="flex min-h-32 flex-col items-center justify-center gap-2">
                   {item.image_path ? <img src={item.image_path} alt={item.name_en} className="h-28 w-28 object-contain" /> : <span aria-hidden="true" className="text-7xl">{item.emoji}</span>}
-                  <h2 className="text-center text-2xl font-bold" lang="ur" dir="rtl">{item.name_ur}</h2>
+                  <h2 style={urduTypography} className="text-center text-2xl font-bold" lang="ur" dir="rtl">{item.name_ur}</h2>
                   <p className="text-sm text-slate-500">{item.name_en}</p>
                 </div>
                 <div className="mt-4 grid grid-cols-3 gap-2">
@@ -89,7 +93,7 @@ function Housekeeper() {
                       aria-pressed={checks[item.id]===choice.value}
                       onClick={() => save(item,choice.value)}
                       className={`min-h-20 rounded-xl border-2 px-1 py-3 text-center disabled:opacity-50 ${checks[item.id]===choice.value?choice.color:"border-slate-200 bg-white"}`}>
-                      <span className="block text-base font-bold" lang="ur" dir="rtl">{choice.ur}</span>
+                      <span style={urduTypography} className="block text-base font-bold" lang="ur" dir="rtl">{choice.ur}</span>
                       <span className="mt-1 block text-xs text-slate-600">{choice.en}</span>
                     </button>
                   ))}
